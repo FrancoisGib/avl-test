@@ -20,7 +20,6 @@ pub struct Dealer {
 }
 
 trait HandHolder {
-    #[cfg_attr(test, mutants::skip)]
     fn calculate_hand_value(&self, hand: &Vec<Card>) -> u8 {
         let mut hand_value = 0;
         let mut aces = 0;
@@ -89,7 +88,7 @@ impl Dealer {
 mod test {
     use crate::{
         card::{Card, CardValue, Suit},
-        player::{Player, PlayerOutcome},
+        player::{HandHolder, Player, PlayerOutcome},
     };
 
     fn card(value: CardValue) -> Card {
@@ -226,5 +225,35 @@ mod test {
         player.add_card(card(CardValue::King));
         player.add_card(card(CardValue::Number(5)));
         assert_eq!(player.get_outcome(15), PlayerOutcome::Push);
+    }
+
+    // pareil marche pas
+    #[test]
+    fn test_ace_subtraction_logic() {
+        let mut player = Player::default();
+        player.add_card(card(CardValue::Ace));
+        player.add_card(card(CardValue::King));
+        player.add_card(card(CardValue::King));
+
+        // Ace(11) + King(10) + King(10) = 31
+        // Après soustractions: 1 + 10 + 10 = 21
+        let value = player.calculate_hand_value(&player.hand);
+        assert_eq!(value, 21);
+
+        // Si -= devient /=, on aurait: 31 / 10 = 3
+        // Si -= devient +=, on aurait: 31 + 10 = 41
+        assert!(value > 10 && value <= 21);
+    }
+
+    #[test]
+    fn test_ace_subtraction_exact_value() {
+        let mut player = Player::default();
+        player.add_card(card(CardValue::Ace));
+        player.add_card(card(CardValue::Number(10)));
+        player.add_card(card(CardValue::Number(10)));
+
+        // Doit être 21, pas 3 (avec /=) ni 41 (avec +=)
+        // j'utilise vraiment calculate_hand_value et pas ma fonction qui l'appelle dans l'implémentation de mon trait
+        assert_eq!(player.calculate_hand_value(&player.hand), 21);
     }
 }
