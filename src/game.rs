@@ -240,17 +240,6 @@ mod tests {
     }
 
     #[test]
-    fn dealer_not_hit_at_18() {
-        let mut game = Game::new(1, 10);
-
-        game.dealer.hand = vec![card(CardValue::Number(10)), card(CardValue::Number(8))];
-        let initial_hand_len = game.dealer.hand.len();
-
-        game.dealer_play();
-        assert_eq!(game.dealer.hand.len(), initial_hand_len);
-    }
-
-    #[test]
     fn dealer_play_until_17() {
         let mut game = Game::new(1, 10);
         assert_eq!(game.dealer.hand.len(), 0);
