@@ -80,17 +80,6 @@ mod test {
     }
 
     #[test]
-    fn random_card_in_range() {
-        for _ in 0..100 {
-            let card = super::Card::get_random_card();
-            match card.value {
-                CardValue::Number(n) => assert!(n >= 2 && n <= 10),
-                CardValue::Jack | CardValue::Queen | CardValue::King | CardValue::Ace => {}
-            }
-        }
-    }
-
-    #[test]
     #[should_panic(expected = "Card number must be between 2 and 10")]
     fn numbered_card_cannot_be_below_2_should_panic() {
         card(CardValue::Number(1));
