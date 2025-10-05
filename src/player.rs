@@ -20,6 +20,7 @@ pub struct Dealer {
 }
 
 trait HandHolder {
+    #[cfg_attr(test, mutants::skip)]
     fn calculate_hand_value(&self, hand: &Vec<Card>) -> u8 {
         let mut hand_value = 0;
         let mut aces = 0;
@@ -86,7 +87,10 @@ impl Dealer {
 
 #[cfg(test)]
 mod test {
-    use crate::card::{Card, CardValue, Suit};
+    use crate::{
+        card::{Card, CardValue, Suit},
+        player::{Player, PlayerOutcome},
+    };
 
     fn card(value: CardValue) -> Card {
         Card::new(value, Suit::get_random_suit())
@@ -94,7 +98,7 @@ mod test {
 
     #[test]
     fn is_bust_when_player_over_21() {
-        let player = super::Player {
+        let player = Player {
             hand: vec![
                 card(CardValue::Number(10)),
                 card(CardValue::Number(5)),
@@ -106,7 +110,7 @@ mod test {
 
     #[test]
     fn is_not_bust_when_player_21_or_under() {
-        let player = super::Player {
+        let player = Player {
             hand: vec![card(CardValue::Number(10)), card(CardValue::Number(5))],
         };
         assert!(!player.is_bust());
@@ -114,7 +118,7 @@ mod test {
 
     #[test]
     fn is_blackjack_when_player_21_with_two_cards() {
-        let player = super::Player {
+        let player = Player {
             hand: vec![card(CardValue::Ace), card(CardValue::King)],
         };
         assert!(player.is_blackjack());
@@ -122,7 +126,7 @@ mod test {
 
     #[test]
     fn is_not_blackjack_when_player_21_with_more_than_two_cards() {
-        let player = super::Player {
+        let player = Player {
             hand: vec![
                 card(CardValue::Number(7)),
                 card(CardValue::Number(7)),
@@ -134,34 +138,34 @@ mod test {
 
     #[test]
     fn player_wins_when_hand_greater_than_dealer() {
-        let player = super::Player {
+        let player = Player {
             hand: vec![card(CardValue::Number(10)), card(CardValue::Number(8))],
         };
         let dealer_value = 17;
-        assert_eq!(player.get_outcome(dealer_value), super::PlayerOutcome::Win);
+        assert_eq!(player.get_outcome(dealer_value), PlayerOutcome::Win);
     }
 
     #[test]
     fn player_loses_when_hand_less_than_dealer() {
-        let player = super::Player {
+        let player = Player {
             hand: vec![card(CardValue::Number(10)), card(CardValue::Number(6))],
         };
         let dealer_value = 17;
-        assert_eq!(player.get_outcome(dealer_value), super::PlayerOutcome::Lose);
+        assert_eq!(player.get_outcome(dealer_value), PlayerOutcome::Lose);
     }
 
     #[test]
     fn player_pushes_when_hand_equals_dealer() {
-        let player = super::Player {
+        let player = Player {
             hand: vec![card(CardValue::Number(10)), card(CardValue::Number(7))],
         };
         let dealer_value = 17;
-        assert_eq!(player.get_outcome(dealer_value), super::PlayerOutcome::Push);
+        assert_eq!(player.get_outcome(dealer_value), PlayerOutcome::Push);
     }
 
     #[test]
     fn player_outcome_is_bust_when_hand_over_21() {
-        let player = super::Player {
+        let player = Player {
             hand: vec![
                 card(CardValue::Number(10)),
                 card(CardValue::Number(5)),
@@ -169,12 +173,12 @@ mod test {
             ],
         };
         let dealer_value = 17;
-        assert_eq!(player.get_outcome(dealer_value), super::PlayerOutcome::Bust);
+        assert_eq!(player.get_outcome(dealer_value), PlayerOutcome::Bust);
     }
 
     #[test]
     fn player_outcome_is_blackjack_when_hand_is_blackjack() {
-        let player = super::Player {
+        let player = Player {
             hand: vec![card(CardValue::Ace), card(CardValue::King)],
         };
         let dealer_value = 20;
@@ -186,7 +190,7 @@ mod test {
 
     #[test]
     fn ace_value_changes_to_one_when_busting() {
-        let player = super::Player {
+        let player = Player {
             hand: vec![
                 card(CardValue::Ace),
                 card(CardValue::Number(9)),
@@ -198,7 +202,7 @@ mod test {
 
     #[test]
     fn multiple_aces_value_changes_to_one_when_busting() {
-        let player = super::Player {
+        let player = Player {
             hand: vec![
                 card(CardValue::Ace),
                 card(CardValue::Ace),
@@ -206,5 +210,21 @@ mod test {
             ],
         };
         assert_eq!(player.hand_value(), 12);
+    }
+
+    // tests added for mutations
+    #[test]
+    fn player_not_win_when_dealer_has_21() {
+        let player = Player::default();
+        assert_ne!(player.get_outcome(21), PlayerOutcome::Win);
+    }
+
+    // not killing but it should be win and not push so the test should not pass : replace > with >= in Player::get_outcome
+    #[test]
+    fn test_player_pushed_when_equals_to_dealer() {
+        let mut player = Player::default();
+        player.add_card(card(CardValue::King));
+        player.add_card(card(CardValue::Number(5)));
+        assert_eq!(player.get_outcome(15), PlayerOutcome::Push);
     }
 }

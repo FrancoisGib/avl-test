@@ -107,4 +107,13 @@ mod tests {
     fn test_deck_from_vec_empty_panics() {
         Deck::from_vec(vec![]);
     }
+
+    // tests added for mutations
+    #[test]
+    fn test_shuffle_changes_card_order() {
+        let mut deck = Deck::from_one_card_game();
+        let original_order: Vec<Card> = deck.cards.clone();
+        deck.shuffle();
+        assert_ne!(deck.cards, original_order);
+    }
 }

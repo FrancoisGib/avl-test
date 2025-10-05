@@ -1,6 +1,6 @@
 use rand::Rng;
 
-#[derive(Debug, PartialEq, Eq, Hash)]
+#[derive(Debug, PartialEq, Eq, Hash, Clone)]
 pub enum CardValue {
     King,
     Queen,
@@ -24,12 +24,13 @@ impl Suit {
             0 => Suit::Hearts,
             1 => Suit::Diamonds,
             2 => Suit::Clubs,
-            _ => Suit::Spades,
+            3 => Suit::Spades,
+            _ => unreachable!(),
         }
     }
 }
 
-#[derive(Debug, PartialEq, Eq, Hash)]
+#[derive(Debug, PartialEq, Eq, Hash, Clone)]
 #[allow(unused)]
 pub struct Card {
     pub value: CardValue,
@@ -113,5 +114,17 @@ mod test {
     fn ace_card_value_is_11() {
         let ace = super::Card::new(CardValue::Ace, super::Suit::Spades);
         assert_eq!(ace.get_card_value(), 11);
+    }
+
+    // tests added for mutations
+    #[test]
+    fn get_suit_random_suit_all_variants() {
+        for _ in 0..100 {
+            let suit = Suit::get_random_suit();
+            assert!(matches!(
+                suit,
+                Suit::Hearts | Suit::Diamonds | Suit::Clubs | Suit::Spades
+            ));
+        }
     }
 }

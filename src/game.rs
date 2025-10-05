@@ -203,25 +203,59 @@ mod tests {
         game.get_outcome(5);
     }
 
+    // modified for mutations
     #[test]
-    fn test_get_player_hand_and_value() {
+    fn test_get_player_hand_value() {
         let mut game = Game::new(1, 10);
         game.deal_initial_cards();
 
         let hand = game.get_player_hand(0);
         let value = game.get_player_hand_value(0);
         assert_eq!(hand.len(), 2);
-        assert!(value > 0);
+        assert_eq!(value, game.players[0].hand_value());
     }
 
+    // modified for mutations
     #[test]
-    fn test_get_dealer_hand_and_value() {
+    fn test_get_dealer_hand_value() {
         let mut game = Game::new(1, 10);
         game.deal_initial_cards();
 
         let hand = game.get_dealer_hand();
         let value = game.get_dealer_hand_value();
         assert_eq!(hand.len(), 2);
-        assert!(value > 0);
+        assert_eq!(value, game.dealer.hand_value());
+    }
+
+    // tests added for mutations
+    #[test]
+    fn dealer_not_hit_at_17() {
+        let mut game = Game::new(1, 10);
+
+        game.dealer.hand = vec![card(CardValue::Number(10)), card(CardValue::Number(7))];
+        let initial_hand_len = game.dealer.hand.len();
+
+        game.dealer_play();
+        assert_eq!(game.dealer.hand.len(), initial_hand_len);
+    }
+
+    #[test]
+    fn dealer_not_hit_at_18() {
+        let mut game = Game::new(1, 10);
+
+        game.dealer.hand = vec![card(CardValue::Number(10)), card(CardValue::Number(8))];
+        let initial_hand_len = game.dealer.hand.len();
+
+        game.dealer_play();
+        assert_eq!(game.dealer.hand.len(), initial_hand_len);
+    }
+
+    #[test]
+    fn dealer_play_until_17() {
+        let mut game = Game::new(1, 10);
+        assert_eq!(game.dealer.hand.len(), 0);
+        game.dealer_play();
+        assert!(game.dealer.hand_value() >= 17);
+        assert!(game.dealer.hand.len() > 0);
     }
 }

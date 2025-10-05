@@ -5,6 +5,7 @@ mod deck;
 mod game;
 mod player;
 
+#[cfg_attr(test, mutants::skip)]
 fn main() {
     let mut game = Game::new(2, 52);
     game.deal_initial_cards();
